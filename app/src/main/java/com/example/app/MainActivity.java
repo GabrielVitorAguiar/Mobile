@@ -2,7 +2,9 @@ package com.example.app;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,47 +18,38 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView textView;
-    EditText edMin,edMax;
+    Button btnAnterior, btnProximo;
+    ImageView imageView;
+    int fotos[] = new int[]{R.drawable.cachorro,R.drawable.gardem,R.drawable.happy,R.drawable.porquinho,R.drawable.patinho};
+    int posicao = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        btnAnterior=findViewById(R.id.anterior);
+        btnProximo=findViewById(R.id.proximo);
+        ImageView imageView = findViewById(R.id.imageView);
+        imageView.setImageResource(fotos[posicao]);
+
+        btnProximo.setOnClickListener(v -> {
+            posicao++;
+            if(posicao > fotos.length-1){
+                posicao=0;
+            }
+            imageView.setImageResource(fotos[posicao]);
         });
 
-        textView =findViewById(R.id.textView);
-        edMin=findViewById(R.id.edMin);
-        edMax=findViewById(R.id.edMax);
-
-        findViewById(R.id.button).setOnClickListener(v -> {
-            String strMin = edMin.getText().toString();
-            String strMax = edMax.getText().toString();
-
-            if(strMin.isEmpty()){
-                edMin.setError("Informe o valor minimo");
-                edMin.requestFocus();
-                return;
+        btnAnterior.setOnClickListener(v -> {
+            posicao --;
+            if(posicao < 0 ){
+                posicao=fotos.length-1;
             }
-
-            if(strMax.isEmpty()) {
-                edMax.setError("Informe o valor máximo");
-                edMax.requestFocus();
-                return;
-            }
-
-            int min = Integer.parseInt(strMin);
-            int max = Integer.parseInt(strMax);
-
-            Random random = new Random();
-            int r = random.nextInt(max - min)+min;
-            textView.setText(Integer.toString(r));
+            imageView.setImageResource(fotos[posicao]);
         });
+
 
     }
 }
