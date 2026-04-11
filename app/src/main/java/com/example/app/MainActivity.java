@@ -14,14 +14,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.DecimalFormat;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnAnterior, btnProximo;
+
     ImageView imageView;
-    int fotos[] = new int[]{R.drawable.cachorro,R.drawable.gardem,R.drawable.happy,R.drawable.porquinho,R.drawable.patinho};
-    int posicao = 0;
+    Button button;
+    EditText edPeso,edAltura;
+    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,26 +31,68 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        btnAnterior=findViewById(R.id.anterior);
-        btnProximo=findViewById(R.id.proximo);
-        ImageView imageView = findViewById(R.id.imageView);
-        imageView.setImageResource(fotos[posicao]);
+        edAltura = findViewById(R.id.edAltura);
+        edPeso = findViewById(R.id.edPeso);
+        imageView = findViewById(R.id.imageView);
+        textView = findViewById(R.id.textView);
+        button = findViewById(R.id.button);
 
-        btnProximo.setOnClickListener(v -> {
-            posicao++;
-            if(posicao > fotos.length-1){
-                posicao=0;
+        button.setOnClickListener(v -> {
+            String strAltura = edAltura.getText().toString();
+            String strPeso = edPeso.getText().toString();
+
+            if(strAltura.isEmpty()){
+                edAltura.setError("Informe a altura!");
+                edAltura.requestFocus();
+                return;
             }
-            imageView.setImageResource(fotos[posicao]);
+
+            if(strPeso.isEmpty()){
+                edPeso.setError("Informe a altura!");
+                edPeso.requestFocus();
+                return;
+            }
+
+            double peso = Double.parseDouble(strPeso);
+            double altura = Double.parseDouble(strAltura);
+
+            double imc = peso / (altura*altura);
+            DecimalFormat dc = new DecimalFormat("##.##");
+            textView.setText(dc.format(imc));
+
+            /*IMC abaixo de 18,5: Abaixo do peso
+IMC entre 18,5 e 24,9: Peso normal
+IMC entre 25 e 29,9: Sobrepeso
+IMC entre 30 e 34,9: Obesidade grau 1
+IMC entre 35 e 39,9: Obesidade grau 2
+IMC acima de 40: Obesidade grau 3*/
+
+            if(imc < 18.5){
+              imageView.setImageResource(R.drawable.abaixopeso);
+              return;
+            };
+            if(imc < 25){
+                imageView.setImageResource(R.drawable.normal);
+                return;
+            }
+            if(imc < 30){
+                imageView.setImageResource(R.drawable.sobrepeso);
+                return;
+            }
+            if(imc < 35 ){
+                imageView.setImageResource(R.drawable.obesidade1);
+                return;
+            }
+            if(imc < 40){
+                imageView.setImageResource(R.drawable.obesidade2);
+                return;
+            }
+
+            imageView.setImageResource(R.drawable.obesidade3);
+
         });
 
-        btnAnterior.setOnClickListener(v -> {
-            posicao --;
-            if(posicao < 0 ){
-                posicao=fotos.length-1;
-            }
-            imageView.setImageResource(fotos[posicao]);
-        });
+
 
 
     }
