@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimplePaint extends View {
@@ -21,20 +23,32 @@ public class SimplePaint extends View {
     Paint currentPaint;
     Path currentPath;
 
+    ColorDrawable currentColor;
+
     public SimplePaint(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
+        mPaintList=new ArrayList<Paint>();
+        mPathList=new ArrayList<Path>();
+        currentColor = new ColorDrawable();
+        currentColor.setColor(Color.BLACK);
+        initLayerDraw();
+    }
+
+    public void initLayerDraw(){
         currentPaint = new Paint();
         currentPath = new Path();
-
-        currentPaint.setColor(Color.RED);
         currentPaint.setStyle(Paint.Style.STROKE);
         currentPaint.setStrokeWidth(20);
-
+        currentPaint.setColor(currentColor.getColor());
     }
 
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
+        for (int i = 0 ; i<mPaintList.size() ; i++){
+            canvas.drawPath(mPathList.get(i),mPaintList.get(i));
+        }
         canvas.drawPath(currentPath, currentPaint);
     }
 
@@ -53,6 +67,9 @@ public class SimplePaint extends View {
                 break;
             case (MotionEvent.ACTION_UP):
                 currentPath.lineTo(lx,ly);
+                mPaintList.add(currentPaint);
+                mPathList.add(currentPath);
+                initLayerDraw();
                 break;
             default:
                 break;
@@ -63,6 +80,7 @@ public class SimplePaint extends View {
     }
 
     public void setColor(Color color) {
+        currentColor.setColor(color.toArgb());
         currentPaint.setColor(color.toArgb());
     }
 }
