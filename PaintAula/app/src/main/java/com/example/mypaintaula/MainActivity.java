@@ -1,122 +1,79 @@
 package com.example.mypaintaula;
 
-import android.content.DialogInterface;
-import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.ListView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.skydoves.colorpickerview.ColorEnvelope;
-import com.skydoves.colorpickerview.ColorPickerDialog;
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SimplePaint simplePaint;
-    private ImageView ivColorPicker;
-    private Button btForma;
+    private Button btnNovaNota;
+    private ListView listNotas;
+
+    private NotaController controller;
+    private ArrayList<Nota> listaNotas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        simplePaint = findViewById(R.id.simplePaint);
-        ivColorPicker = findViewById(R.id.ivColorPicker);
-        btForma = findViewById(R.id.btForma);
+        btnNovaNota = findViewById(R.id.btnNovaNota);
+        listNotas = findViewById(R.id.listNotas);
 
-        ivColorPicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                colorPickerSelectColor();
-            }
+        controller = new NotaController(this);
+
+        btnNovaNota.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    ActivityExibeNota.class
+            );
+
+            startActivity(intent);
+
         });
 
-        btForma.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selecionarForma();
-            }
+        listNotas.setOnItemClickListener((parent, view, position, id) -> {
+
+            Nota nota = listaNotas.get(position);
+
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    ActivityExibeNota.class
+            );
+
+            intent.putExtra("id", nota.getId());
+
+            startActivity(intent);
+
         });
+
     }
 
-    private void selecionarForma() {
-
-        String[] opcoes = {
-                "Linha Livre",
-                "Retângulo",
-                "Círculo"
-        };
-
-        new AlertDialog.Builder(this)
-                .setTitle("Escolha a forma")
-                .setItems(opcoes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        switch (which) {
-
-                            case 0:
-                                simplePaint.setTipoDesenho(SimplePaint.LINHA);
-                                break;
-
-                            case 1:
-                                simplePaint.setTipoDesenho(SimplePaint.RETANGULO);
-                                break;
-
-                            case 2:
-                                simplePaint.setTipoDesenho(SimplePaint.CIRCULO);
-                                break;
-                        }
-                    }
-                })
-                .show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        carregarLista();
     }
 
-    public void colorPickerSelectColor() {
+    private void carregarLista() {
 
-        new ColorPickerDialog.Builder(this)
-                .setTitle("Escolha uma cor")
-                .setPreferenceName("MyColorPickerDialog")
-                .setPositiveButton(
-                        getString(R.string.confirm),
-                        new ColorEnvelopeListener() {
-                            @Override
-                            public void onColorSelected(
-                                    ColorEnvelope envelope,
-                                    boolean fromUser
-                            ) {
-                                setColor(envelope);
-                            }
-                        }
-                )
-                .setNegativeButton(
-                        getString(R.string.cancel),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        }
-                )
-                .attachAlphaSlideBar(true)
-                .attachBrightnessSlideBar(true)
-                .setBottomSpace(12)
-                .show();
-    }
+        listaNotas = controller.listar();
 
-    private void setColor(ColorEnvelope envelope) {
-
-        simplePaint.setColor(
-                Color.valueOf(envelope.getColor())
+        ArrayAdapter<Nota> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                listaNotas
         );
 
-        ivColorPicker.setColorFilter(
-                Color.valueOf(envelope.getColor()).toArgb()
-        );
+        listNotas.setAdapter(adapter);
+
     }
+
 }
