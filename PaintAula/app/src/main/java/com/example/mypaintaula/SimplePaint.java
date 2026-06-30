@@ -53,7 +53,6 @@ public class SimplePaint extends View {
                 break;
             case (MotionEvent.ACTION_UP):
                 currentPath.lineTo(lx,ly);
-                currentPaint.setColor(Color.BLUE);
                 break;
             default:
                 break;
@@ -61,5 +60,9 @@ public class SimplePaint extends View {
 
         invalidate();
         return true;
+    }
+
+    public void setColor(Color color) {
+        currentPaint.setColor(color.toArgb());
     }
 }
