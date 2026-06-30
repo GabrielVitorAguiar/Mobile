@@ -18,6 +18,12 @@ import java.util.List;
 
 public class SimplePaint extends View {
 
+    public static final int LINHA = 0;
+    public static final int RETANGULO = 1;
+    public static final int CIRCULO = 2;
+
+    private int tipoDesenho = LINHA;
+
     List<Paint> mPaintList;
     List<Path> mPathList;
     Paint currentPaint;
@@ -25,61 +31,110 @@ public class SimplePaint extends View {
 
     ColorDrawable currentColor;
 
+    private float startX;
+    private float startY;
+
     public SimplePaint(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        mPaintList=new ArrayList<Paint>();
-        mPathList=new ArrayList<Path>();
+        mPaintList = new ArrayList<>();
+        mPathList = new ArrayList<>();
+
         currentColor = new ColorDrawable();
         currentColor.setColor(Color.BLACK);
+
         initLayerDraw();
     }
 
-    public void initLayerDraw(){
+    public void initLayerDraw() {
         currentPaint = new Paint();
         currentPath = new Path();
+
         currentPaint.setStyle(Paint.Style.STROKE);
         currentPaint.setStrokeWidth(20);
         currentPaint.setColor(currentColor.getColor());
     }
 
+    public void setTipoDesenho(int tipo) {
+        tipoDesenho = tipo;
+    }
+
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
-        for (int i = 0 ; i<mPaintList.size() ; i++){
-            canvas.drawPath(mPathList.get(i),mPaintList.get(i));
+
+        for (int i = 0; i < mPaintList.size(); i++) {
+            canvas.drawPath(mPathList.get(i), mPaintList.get(i));
         }
+
         canvas.drawPath(currentPath, currentPaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float ly, lx;
-        lx=event.getX();
-        ly=event.getY();
-        switch (event.getAction()){
-            case (MotionEvent.ACTION_DOWN):
-                currentPath.moveTo(lx,ly);
-                currentPath.lineTo(lx,ly);
+
+        float lx = event.getX();
+        float ly = event.getY();
+
+        switch (event.getAction()) {
+
+            case MotionEvent.ACTION_DOWN:
+
+                startX = lx;
+                startY = ly;
+
+                if (tipoDesenho == LINHA) {
+                    currentPath.moveTo(lx, ly);
+                    currentPath.lineTo(lx, ly);
+                }
+
                 break;
-            case (MotionEvent.ACTION_MOVE):
-                currentPath.lineTo(lx,ly);
+
+            case MotionEvent.ACTION_MOVE:
+
+                if (tipoDesenho == LINHA) {
+
+                    currentPath.lineTo(lx, ly);
+
+                } else if (tipoDesenho == RETANGULO) {
+
+                    currentPath.reset();
+                    currentPath.addRect(startX, startY, lx, ly, Path.Direction.CW);
+
+                } else if (tipoDesenho == CIRCULO) {
+
+                    currentPath.reset();
+
+                    float raio = (float) Math.sqrt(
+                            Math.pow(lx - startX, 2) +
+                                    Math.pow(ly - startY, 2)
+                    );
+
+                    currentPath.addCircle(startX, startY, raio, Path.Direction.CW);
+                }
+
+                invalidate();
                 break;
-            case (MotionEvent.ACTION_UP):
-                currentPath.lineTo(lx,ly);
+
+            case MotionEvent.ACTION_UP:
+
+                if (tipoDesenho == LINHA) {
+                    currentPath.lineTo(lx, ly);
+                }
+
                 mPaintList.add(currentPaint);
                 mPathList.add(currentPath);
+
                 initLayerDraw();
-                break;
-            default:
+
+                invalidate();
                 break;
         }
 
-        invalidate();
         return true;
     }
 
-    public void setColor(Color color) {
+    public void setColor(android.graphics.Color color) {
         currentColor.setColor(color.toArgb());
         currentPaint.setColor(color.toArgb());
     }
